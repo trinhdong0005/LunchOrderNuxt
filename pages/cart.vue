@@ -76,7 +76,8 @@ export default {
       groupId: '',
       basketQty: useBasketQty(),
       baskets: null,
-      fullname: ''
+      fullname: '',
+      isChecking: false
     }
   },
   mounted: async function () {
@@ -112,10 +113,14 @@ export default {
       this.$router.push({ path: 'order' })
     },
     async checkout() {
+      if (this.isChecking) {
+        return
+      }
       if (this.basketQty < 1) {
         this.$toast.error('Giỏ hàng trống!')
         return
       }
+      this.isChecking = true
       this.baskets = await this.updateBasket(this.groupId)
       const { data, pending, error, refresh } = await this.$useApi('/Order/Submit', { method: 'POST', params: { groupId: this.groupId } })
       if (!error.value && data.value.id) {
@@ -124,6 +129,9 @@ export default {
       } else {
         this.$toast.error('Đặt hàng thất bại')
       }
+      setTimeout(() => {
+        this.isChecking = false
+      }, 1000)
     },
     async deleteItem(item) {
       const body = {
